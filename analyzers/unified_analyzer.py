@@ -15,6 +15,10 @@ class UnifiedAnalyzer(BaseAnalyzer, ICodeAnalyzer):
         self.static_analyzer = StaticAnalyzer(config)
         self.llm_analyzer = LLMAnalyzer(config)
     
+    def analyze(self, file_path: str) -> AnalysisResult:
+        """Analyze file using both static and LLM analysis (BaseAnalyzer method)"""
+        return self.analyze_file(file_path)
+    
     def analyze_file(self, file_path: str) -> AnalysisResult:
         """Analyze file using both static and LLM analysis"""
         if not self.validate_file(file_path):

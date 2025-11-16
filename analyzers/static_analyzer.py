@@ -14,6 +14,10 @@ class StaticAnalyzer(BaseAnalyzer, ICodeAnalyzer):
         super().__init__(config)
         self.timeout = self.config.get('static_analysis_timeout', 30)
     
+    def analyze(self, file_path: str) -> AnalysisResult:
+        """Analyze file using static analysis tools (BaseAnalyzer method)"""
+        return self.analyze_file(file_path)
+    
     def analyze_file(self, file_path: str) -> AnalysisResult:
         """Analyze file using static analysis tools"""
         if not self.validate_file(file_path):

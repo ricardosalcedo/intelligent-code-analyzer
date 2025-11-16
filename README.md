@@ -1,6 +1,6 @@
-# Intelligent Code Analyzer
+# 🧬 CODEX - Intelligent Code Analyzer
 
-🧠 A sophisticated code analysis system that combines static analysis tools with Large Language Model intelligence to provide comprehensive code review, quality assessment, and **automated fix generation with pull request workflow**.
+**The ultimate AI-powered code analysis and enhancement system** that combines static analysis tools with Large Language Model intelligence to provide comprehensive code review, quality assessment, and **automated fix generation with pull request workflow**.
 
 ## ✨ Features
 
@@ -9,6 +9,7 @@
 - **LLM-Powered Analysis**: Uses AWS Bedrock Claude for intelligent code review
 - **Iterative Improvement**: Feedback loop with progressive code enhancement
 - **🆕 Automated Fix Generation**: AI-powered code fixes with testing and PR creation
+- **🆕 Multi-Agent Coordination**: Strands Agents for sophisticated workflow orchestration
 - **Comprehensive Reporting**: Detailed analysis reports and progress tracking
 
 ## 🚀 Quick Start
@@ -34,14 +35,22 @@ aws configure
 # Install GitHub CLI (for auto-fix PRs)
 # macOS: brew install gh
 # Login: gh auth login
+
+# Make CODEX executable (optional)
+chmod +x codex
 ```
 
 ### Basic Usage
 ```bash
-# Unified CLI with subcommands (NEW CLEAN ARCHITECTURE!)
-python3 cli.py analyze myfile.py
-python3 cli.py auto-fix myfile.py --create-pr
-python3 cli.py strands myfile.py --mode coordinated
+# 🧬 CODEX - The Ultimate Code Analysis Tool
+./codex analyze myfile.py
+./codex auto-fix myfile.py --create-pr
+./codex strands myfile.py --mode coordinated
+
+# Or with python3
+python3 codex analyze myfile.py
+python3 codex auto-fix myfile.py --create-pr --dry-run
+python3 codex strands myfile.py --mode coordinated
 
 # Legacy individual scripts (still supported)
 python3 code_review_cli.py myfile.py
@@ -49,7 +58,7 @@ python3 auto_fix_cli.py myfile.py
 python3 strands_auto_fix_cli.py myfile.py --mode coordinated
 
 # Directory analysis
-python3 cli.py analyze src/ --recursive --output results.json
+./codex analyze src/ --recursive --output results.json
 ```
 
 ## 🤖 Automated Fix Workflow (NEW!)
@@ -189,7 +198,7 @@ intelligent-code-analyzer/
 │   ├── workflow_manager.py # Workflow coordination
 │   ├── auto_fix_workflow.py # Auto-fix implementation
 │   └── strands_workflow.py # Strands multi-agent workflow
-├── cli.py                  # 🆕 Unified CLI interface
+├── codex                   # 🧬 Main CODEX CLI interface
 └── [legacy scripts]        # Original scripts (still supported)
 ```
 
@@ -204,12 +213,12 @@ intelligent-code-analyzer/
 ### Usage Examples
 ```bash
 # Clean unified interface
-python3 cli.py analyze myfile.py --output results.json
-python3 cli.py auto-fix myfile.py --create-pr --dry-run
-python3 cli.py strands myfile.py --mode coordinated --verbose
+./codex analyze myfile.py --output results.json
+./codex auto-fix myfile.py --create-pr --dry-run
+./codex strands myfile.py --mode coordinated --verbose
 
 # Configuration support
-python3 cli.py analyze src/ --config custom_config.json --recursive
+./codex analyze src/ --config custom_config.json --recursive
 ```
 
 ## 📈 Analysis Types
@@ -294,4 +303,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 
 **Ready to improve your code quality with AI-powered automation?** 🚀
 
-Try the auto-fix workflow: `python3 auto_fix_cli.py your_file.py`
+Try CODEX: `./codex analyze your_file.py`

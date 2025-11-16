@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
 """
-Unified CLI for Intelligent Code Analyzer
+🧬 CODEX - Intelligent Code Analysis & Enhancement
 
-Clean, DRY implementation with proper structure and error handling.
+The ultimate AI-powered code analysis tool that combines static analysis,
+LLM intelligence, and multi-agent coordination for comprehensive code improvement.
+
+Usage:
+    codex analyze myfile.py
+    codex auto-fix myfile.py --create-pr  
+    codex strands myfile.py --mode coordinated
 """
 
 import argparse
@@ -25,14 +31,15 @@ class CLI:
     def create_parser(self) -> argparse.ArgumentParser:
         """Create argument parser"""
         parser = argparse.ArgumentParser(
-            description="Intelligent Code Analyzer with AI-powered workflows",
+            prog='codex',
+            description="🧬 CODEX - Intelligent Code Analysis & Enhancement",
             formatter_class=argparse.RawDescriptionHelpFormatter,
             epilog="""
 Examples:
-  %(prog)s analyze myfile.py
-  %(prog)s auto-fix myfile.py --create-pr
-  %(prog)s strands myfile.py --mode coordinated
-  %(prog)s analyze src/ --recursive --output results.json
+  codex analyze myfile.py
+  codex auto-fix myfile.py --create-pr
+  codex strands myfile.py --mode coordinated
+  codex analyze src/ --recursive --output results.json
             """
         )
         
@@ -108,7 +115,7 @@ Examples:
     def _run_analyze(self, args: argparse.Namespace) -> int:
         """Run analysis workflow"""
         
-        print("📊 Code Analysis")
+        print("🧬 CODEX Analysis")
         print("=" * 30)
         
         if Path(args.path).is_file():
@@ -130,7 +137,7 @@ Examples:
     def _run_auto_fix(self, args: argparse.Namespace) -> int:
         """Run auto-fix workflow"""
         
-        print("🛠️  Auto-Fix Workflow")
+        print("🧬 CODEX Auto-Fix")
         print("=" * 30)
         
         if not Path(args.path).is_file():
@@ -158,7 +165,7 @@ Examples:
     def _run_strands(self, args: argparse.Namespace) -> int:
         """Run Strands workflow"""
         
-        print("🤖 Strands Multi-Agent Workflow")
+        print("🧬 CODEX Multi-Agent")
         print("=" * 40)
         
         if not Path(args.path).is_file():

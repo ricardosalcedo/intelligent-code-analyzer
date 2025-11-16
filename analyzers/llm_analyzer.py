@@ -17,6 +17,10 @@ class LLMAnalyzer(BaseAnalyzer, ICodeAnalyzer, ILLMProvider):
         )
         self.max_tokens = self.config.get('max_tokens', 2000)
     
+    def analyze(self, file_path: str) -> AnalysisResult:
+        """Analyze file using LLM (BaseAnalyzer method)"""
+        return self.analyze_file(file_path)
+    
     def analyze_file(self, file_path: str) -> AnalysisResult:
         """Analyze file using LLM"""
         if not self.validate_file(file_path):
