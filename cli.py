@@ -1,0 +1,295 @@
+#!/usr/bin/env python3
+"""
+Unified CLI for Intelligent Code Analyzer
+
+Clean, DRY implementation with proper structure and error handling.
+"""
+
+import argparse
+import sys
+import json
+from pathlib import Path
+from typing import Dict, Any
+
+from core.config import Config
+from core.exceptions import CodeAnalyzerError
+from workflows.workflow_manager import WorkflowManager, WorkflowType
+
+class CLI:
+    """Main CLI class"""
+    
+    def __init__(self):
+        self.config = Config.from_env()
+        self.workflow_manager = WorkflowManager(self.config)
+    
+    def create_parser(self) -> argparse.ArgumentParser:
+        """Create argument parser"""
+        parser = argparse.ArgumentParser(
+            description="Intelligent Code Analyzer with AI-powered workflows",
+            formatter_class=argparse.RawDescriptionHelpFormatter,
+            epilog="""
+Examples:
+  %(prog)s analyze myfile.py
+  %(prog)s auto-fix myfile.py --create-pr
+  %(prog)s strands myfile.py --mode coordinated
+  %(prog)s analyze src/ --recursive --output results.json
+            """
+        )
+        
+        # Subcommands
+        subparsers = parser.add_subparsers(dest='command', help='Available commands')
+        
+        # Analysis command
+        analyze_parser = subparsers.add_parser('analyze', help='Analyze code quality')
+        self._add_common_args(analyze_parser)
+        
+        # Auto-fix command
+        autofix_parser = subparsers.add_parser('auto-fix', help='Auto-fix with PR creation')
+        self._add_common_args(autofix_parser)
+        autofix_parser.add_argument('--create-pr', action='store_true', help='Create pull request')
+        autofix_parser.add_argument('--dry-run', action='store_true', help='Preview fixes only')
+        
+        # Strands command
+        strands_parser = subparsers.add_parser('strands', help='Strands multi-agent workflow')
+        self._add_common_args(strands_parser)
+        strands_parser.add_argument('--mode', choices=['analysis', 'coordinated', 'full'], 
+                                   default='coordinated', help='Strands workflow mode')
+        
+        return parser
+    
+    def _add_common_args(self, parser: argparse.ArgumentParser):
+        """Add common arguments to parser"""
+        parser.add_argument('path', help='File or directory to analyze')
+        parser.add_argument('--recursive', '-r', action='store_true', 
+                           help='Recursively analyze directory')
+        parser.add_argument('--output', '-o', help='Save results to JSON file')
+        parser.add_argument('--report', help='Generate markdown report')
+        parser.add_argument('--config', help='Configuration file path')
+        parser.add_argument('--verbose', '-v', action='store_true', help='Verbose output')
+    
+    def run(self, args: argparse.Namespace) -> int:
+        """Run CLI with parsed arguments"""
+        
+        try:
+            # Load custom config if provided
+            if args.config:
+                self.config = self._load_config(args.config)
+                self.workflow_manager = WorkflowManager(self.config)
+            
+            # Validate path
+            if not Path(args.path).exists():
+                print(f"❌ Path not found: {args.path}")
+                return 1
+            
+            # Execute command
+            if args.command == 'analyze':
+                return self._run_analyze(args)
+            elif args.command == 'auto-fix':
+                return self._run_auto_fix(args)
+            elif args.command == 'strands':
+                return self._run_strands(args)
+            else:
+                print("❌ No command specified. Use --help for usage.")
+                return 1
+                
+        except CodeAnalyzerError as e:
+            print(f"❌ Analysis error: {e}")
+            return 1
+        except KeyboardInterrupt:
+            print("\n⏹️  Interrupted by user")
+            return 1
+        except Exception as e:
+            if args.verbose:
+                import traceback
+                traceback.print_exc()
+            print(f"❌ Unexpected error: {e}")
+            return 1
+    
+    def _run_analyze(self, args: argparse.Namespace) -> int:
+        """Run analysis workflow"""
+        
+        print("📊 Code Analysis")
+        print("=" * 30)
+        
+        if Path(args.path).is_file():
+            results = self.workflow_manager.execute_workflow(
+                args.path, 
+                WorkflowType.ANALYSIS_ONLY
+            )
+            self._print_analysis_results(results)
+        else:
+            results = self._analyze_directory(args.path, args.recursive)
+            self._print_directory_results(results)
+        
+        # Save results if requested
+        if args.output:
+            self._save_results(results, args.output)
+        
+        return 0 if results.get('success', True) else 1
+    
+    def _run_auto_fix(self, args: argparse.Namespace) -> int:
+        """Run auto-fix workflow"""
+        
+        print("🛠️  Auto-Fix Workflow")
+        print("=" * 30)
+        
+        if not Path(args.path).is_file():
+            print("❌ Auto-fix only supports single files")
+            return 1
+        
+        workflow_args = {
+            'create_pr': args.create_pr,
+            'dry_run': args.dry_run
+        }
+        
+        results = self.workflow_manager.execute_workflow(
+            args.path,
+            WorkflowType.AUTO_FIX,
+            **workflow_args
+        )
+        
+        self._print_auto_fix_results(results)
+        
+        if args.output:
+            self._save_results(results, args.output)
+        
+        return 0 if results.get('success', False) else 1
+    
+    def _run_strands(self, args: argparse.Namespace) -> int:
+        """Run Strands workflow"""
+        
+        print("🤖 Strands Multi-Agent Workflow")
+        print("=" * 40)
+        
+        if not Path(args.path).is_file():
+            print("❌ Strands workflow only supports single files")
+            return 1
+        
+        workflow_args = {'mode': args.mode}
+        
+        results = self.workflow_manager.execute_workflow(
+            args.path,
+            WorkflowType.STRANDS_COORDINATED,
+            **workflow_args
+        )
+        
+        self._print_strands_results(results)
+        
+        if args.output:
+            self._save_results(results, args.output)
+        
+        return 0 if results.get('success', False) else 1
+    
+    def _analyze_directory(self, directory: str, recursive: bool) -> Dict[str, Any]:
+        """Analyze all files in directory"""
+        from core.utils import FileUtils
+        
+        files = FileUtils.find_files(directory, self.config.supported_extensions, recursive)
+        
+        if not files:
+            return {'success': False, 'error': 'No supported files found'}
+        
+        results = []
+        for file_path in files:
+            result = self.workflow_manager.execute_workflow(file_path, WorkflowType.ANALYSIS_ONLY)
+            results.append(result)
+        
+        return {
+            'success': True,
+            'directory': directory,
+            'files_analyzed': len(files),
+            'results': results
+        }
+    
+    def _print_analysis_results(self, results: Dict[str, Any]):
+        """Print analysis results"""
+        if not results.get('success'):
+            print(f"❌ Analysis failed: {results.get('error', 'Unknown error')}")
+            return
+        
+        analysis = results['analysis']
+        print(f"📁 File: {analysis['file_path']}")
+        print(f"🔤 Language: {analysis['language'].upper()}")
+        print(f"📊 Quality Score: {analysis['quality_score']}/10")
+        print(f"🚨 Issues Found: {analysis['issues_found']}")
+        
+        if analysis['recommendations']:
+            print(f"\n💡 Recommendations:")
+            for i, rec in enumerate(analysis['recommendations'][:3], 1):
+                print(f"   {i}. {rec}")
+    
+    def _print_auto_fix_results(self, results: Dict[str, Any]):
+        """Print auto-fix results"""
+        if not results.get('success'):
+            print(f"❌ Auto-fix failed: {results.get('error', 'Unknown error')}")
+            return
+        
+        print(f"✅ Auto-fix completed successfully")
+        if results.get('pr_url'):
+            print(f"🔗 Pull Request: {results['pr_url']}")
+    
+    def _print_strands_results(self, results: Dict[str, Any]):
+        """Print Strands results"""
+        if not results.get('success'):
+            print(f"❌ Strands workflow failed: {results.get('error', 'Unknown error')}")
+            return
+        
+        print(f"✅ Strands workflow completed successfully")
+        print(f"🤖 Agents coordinated: {results.get('agents_used', 'N/A')}")
+    
+    def _print_directory_results(self, results: Dict[str, Any]):
+        """Print directory analysis results"""
+        if not results.get('success'):
+            print(f"❌ Directory analysis failed: {results.get('error', 'Unknown error')}")
+            return
+        
+        print(f"📂 Directory: {results['directory']}")
+        print(f"📋 Files analyzed: {results['files_analyzed']}")
+        
+        # Calculate summary statistics
+        total_issues = 0
+        total_quality = 0
+        
+        for result in results['results']:
+            if result.get('success'):
+                analysis = result['analysis']
+                total_issues += analysis['issues_found']
+                total_quality += analysis['quality_score']
+        
+        avg_quality = total_quality / len(results['results']) if results['results'] else 0
+        
+        print(f"📊 Average Quality: {avg_quality:.1f}/10")
+        print(f"🚨 Total Issues: {total_issues}")
+    
+    def _save_results(self, results: Dict[str, Any], output_path: str):
+        """Save results to file"""
+        try:
+            with open(output_path, 'w') as f:
+                json.dump(results, f, indent=2)
+            print(f"💾 Results saved to: {output_path}")
+        except Exception as e:
+            print(f"❌ Failed to save results: {e}")
+    
+    def _load_config(self, config_path: str) -> Config:
+        """Load configuration from file"""
+        try:
+            with open(config_path, 'r') as f:
+                config_dict = json.load(f)
+            return Config.from_dict(config_dict)
+        except Exception as e:
+            raise CodeAnalyzerError(f"Failed to load config from {config_path}: {e}")
+
+def main():
+    """Main entry point"""
+    cli = CLI()
+    parser = cli.create_parser()
+    args = parser.parse_args()
+    
+    if not args.command:
+        parser.print_help()
+        return 1
+    
+    return cli.run(args)
+
+if __name__ == "__main__":
+    sys.exit(main())
