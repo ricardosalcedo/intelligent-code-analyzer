@@ -47,6 +47,9 @@ python3 code_review_cli.py myfile.py --iterative --iterations 3
 # 🆕 Auto-fix with pull request (NEW!)
 python3 auto_fix_cli.py myfile.py
 
+# 🆕 Strands multi-agent coordination (NEW!)
+python3 strands_auto_fix_cli.py myfile.py --mode coordinated
+
 # Preview fixes without applying (dry-run)
 python3 auto_fix_cli.py myfile.py --dry-run
 
@@ -65,6 +68,50 @@ The auto-fix system provides a complete workflow from analysis to pull request:
 4. **🌿 Branch Creation**: Creates feature branch automatically
 5. **📝 Pull Request**: Creates PR with detailed description
 6. **👥 Review & Merge**: Team reviews and approves changes
+
+## 🎯 Strands Multi-Agent Coordination (NEW!)
+
+Advanced workflow using specialized AI agents for coordinated code analysis and improvement:
+
+### Agent Roles
+- **🎯 Coordinator Agent**: Orchestrates workflow and manages agent interactions
+- **📊 Analysis Agent**: Performs comprehensive code quality assessment
+- **🛠️ Fix Agent**: Generates and applies targeted code improvements
+- **🧪 Testing Agent**: Validates fixes and ensures quality standards
+- **🌿 PR Agent**: Manages Git operations and pull request workflow
+
+### Strands Workflow Modes
+```bash
+# Analysis with agent coordination
+python3 strands_auto_fix_cli.py myfile.py --mode analysis_only
+
+# Coordinated analysis + real PR creation
+python3 strands_auto_fix_cli.py myfile.py --mode coordinated
+
+# Full integrated workflow (default)
+python3 strands_auto_fix_cli.py myfile.py --mode full
+```
+
+### Agent Coordination Example
+```
+🤖 Strands Multi-Agent Code Analysis
+📁 File: example.py
+
+🎯 Step 1: Workflow Coordination
+   [coordinator] Orchestrating 5-step analysis workflow...
+
+📊 Step 2: Code Quality Analysis  
+   [analysis_agent] Quality Score: 4/10, Issues Found: 3
+
+🛠️ Step 3: Fix Generation
+   [fix_agent] Fixes Generated: 3, Improvement: +3 quality points
+
+🧪 Step 4: Fix Validation
+   [testing_agent] Test Status: passed, Syntax Check: ✅
+
+🌿 Step 5: Pull Request Creation
+   [pr_agent] PR Status: ✅, PR URL: https://github.com/user/repo/pull/1
+```
 
 ### Auto-Fix Example
 ```bash
@@ -131,8 +178,10 @@ python3 auto_fix_cli.py problematic_code.py
 - **`code_analyzer.py`** - Core analysis engine with multi-language support
 - **`smart_code_analyzer.py`** - Enhanced analyzer with feedback loop capabilities
 - **`code_review_cli.py`** - Production-ready command-line interface
-- **`auto_fix_pr.py`** - 🆕 Automated fix generation and PR workflow
-- **`auto_fix_cli.py`** - 🆕 CLI for auto-fix operations
+- **`auto_fix_pr.py`** - Automated fix generation and PR workflow
+- **`auto_fix_cli.py`** - CLI for auto-fix operations
+- **`strands_code_analyzer.py`** - 🆕 Strands Agents multi-agent coordination system
+- **`strands_auto_fix_cli.py`** - 🆕 Strands-powered workflow CLI
 - **`enhanced_code_analyzer.py`** - Advanced iterative improvement features
 
 ## 📈 Analysis Types
