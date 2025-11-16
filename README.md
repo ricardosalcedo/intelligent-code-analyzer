@@ -38,23 +38,18 @@ aws configure
 
 ### Basic Usage
 ```bash
-# Analyze a single file
+# Unified CLI with subcommands (NEW CLEAN ARCHITECTURE!)
+python3 cli.py analyze myfile.py
+python3 cli.py auto-fix myfile.py --create-pr
+python3 cli.py strands myfile.py --mode coordinated
+
+# Legacy individual scripts (still supported)
 python3 code_review_cli.py myfile.py
-
-# Analyze with iterative improvement
-python3 code_review_cli.py myfile.py --iterative --iterations 3
-
-# 🆕 Auto-fix with pull request (NEW!)
 python3 auto_fix_cli.py myfile.py
-
-# 🆕 Strands multi-agent coordination (NEW!)
 python3 strands_auto_fix_cli.py myfile.py --mode coordinated
 
-# Preview fixes without applying (dry-run)
-python3 auto_fix_cli.py myfile.py --dry-run
-
-# Analyze entire directory
-python3 code_review_cli.py src/ --recursive
+# Directory analysis
+python3 cli.py analyze src/ --recursive --output results.json
 ```
 
 ## 🤖 Automated Fix Workflow (NEW!)
@@ -173,16 +168,49 @@ python3 auto_fix_cli.py problematic_code.py
    ✅ Create PR: completed
 ```
 
-## 🔧 Components
+## 🏗️ Clean Architecture (NEW!)
 
-- **`code_analyzer.py`** - Core analysis engine with multi-language support
-- **`smart_code_analyzer.py`** - Enhanced analyzer with feedback loop capabilities
-- **`code_review_cli.py`** - Production-ready command-line interface
-- **`auto_fix_pr.py`** - Automated fix generation and PR workflow
-- **`auto_fix_cli.py`** - CLI for auto-fix operations
-- **`strands_code_analyzer.py`** - 🆕 Strands Agents multi-agent coordination system
-- **`strands_auto_fix_cli.py`** - 🆕 Strands-powered workflow CLI
-- **`enhanced_code_analyzer.py`** - Advanced iterative improvement features
+The project has been refactored with a clean, DRY, and robust architecture:
+
+### Module Structure
+```
+intelligent-code-analyzer/
+├── core/                    # Core framework
+│   ├── base.py             # Base classes and data structures
+│   ├── interfaces.py       # Dependency injection interfaces
+│   ├── exceptions.py       # Custom exception hierarchy
+│   ├── config.py          # Configuration management
+│   └── utils.py           # Utility functions
+├── analyzers/              # Analysis implementations
+│   ├── static_analyzer.py  # Static analysis (flake8, ESLint, etc.)
+│   ├── llm_analyzer.py     # LLM-based analysis
+│   └── unified_analyzer.py # Combined static + LLM analysis
+├── workflows/              # Workflow orchestration
+│   ├── workflow_manager.py # Workflow coordination
+│   ├── auto_fix_workflow.py # Auto-fix implementation
+│   └── strands_workflow.py # Strands multi-agent workflow
+├── cli.py                  # 🆕 Unified CLI interface
+└── [legacy scripts]        # Original scripts (still supported)
+```
+
+### Key Principles
+- **🎯 Single Responsibility**: Each class has one clear purpose
+- **🔌 Dependency Injection**: Loose coupling through interfaces
+- **🚫 DRY**: No code duplication, shared utilities
+- **🛡️ Robust Error Handling**: Comprehensive exception hierarchy
+- **⚙️ Configurable**: Environment-based configuration
+- **🧪 Testable**: Modular design enables easy testing
+
+### Usage Examples
+```bash
+# Clean unified interface
+python3 cli.py analyze myfile.py --output results.json
+python3 cli.py auto-fix myfile.py --create-pr --dry-run
+python3 cli.py strands myfile.py --mode coordinated --verbose
+
+# Configuration support
+python3 cli.py analyze src/ --config custom_config.json --recursive
+```
 
 ## 📈 Analysis Types
 
